@@ -57,6 +57,8 @@ function TestInvoicing:get_client_fields()
    end
 end
 
+--print(#argv)
+
 local lu = LuaUnit
 -- lu:setOutputType('TAP')
 lu:setVerbosity(5)

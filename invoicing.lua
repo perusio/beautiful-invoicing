@@ -51,7 +51,7 @@ local format = string.format
 local pairs = pairs
 local ipairs = ipairs
 local assert = assert
-local print = print
+local pcall = pcall
 
 -- Avoid polluting the global environment.
 -- If we are in Lua 5.1 this function exists.
@@ -84,7 +84,9 @@ _M.client_schema = {
 --
 function _M.get_client_record(client_name)
    -- Create a reader for the invoice DB.
-   local cdb = assert(open(_M.invoice_cdb))
+   local _, cdb = pcall(open, _M.invoice_cdb)
+   -- If the CDB is missing return false.
+   if not cdb then return false end
 
    for k, v in cdb:pairs() do
       if (k == client_name) then
@@ -92,8 +94,6 @@ function _M.get_client_record(client_name)
          return decode(v)
       end
    end
-   -- If we didn't found a client record return false.
-   return false
 end
 
 --- Update an invoice number.
@@ -136,7 +136,7 @@ function _M.update_client_record(client_name, values)
    local not_empty = false
 
    -- See if we have an existing record or not.
-   record = _M.get_client_record(client_name) or {}
+   local record = _M.get_client_record(client_name) or {}
 
    -- Loop over the schema inserting the values.
    for _, k in ipairs(_M.client_schema) do
