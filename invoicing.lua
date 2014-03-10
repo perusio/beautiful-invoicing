@@ -49,7 +49,9 @@ local close = io.close
 local time = os.time
 local format = string.format
 local pairs = pairs
+local ipairs = ipairs
 local assert = assert
+local print = print
 
 -- Avoid polluting the global environment.
 -- If we are in Lua 5.1 this function exists.
@@ -60,7 +62,7 @@ else -- Lua 5.2.
 end
 
 -- Module table.
-local _M = { _VERSION = '0.1', _NAME = 'invoice_number', }
+local _M = { _VERSION = '0.1', _NAME = 'invoicing', }
 
 -- Invoice CDB related files.
 _M.invoice_cdb = 'invoice.cdb'
@@ -101,10 +103,10 @@ end
 -- @return number
 --   The invoice number or nil.
 --
-local function get_set_invoice_number(client_name)
+function _M.get_set_invoice_number(client_name)
 
    -- Try to get the current record.
-   local current_record = get_client_record(client_name)
+   local current_record = _M.get_client_record(client_name)
    -- If there's a record then update the invoice number.
    if (current_record) then
       current_invoice_number = current_record.invoice_number
@@ -113,7 +115,7 @@ local function get_set_invoice_number(client_name)
       -- Update the time stamp.
       current_record.timestamp = time()
       -- Update the client record with the new invoice number.
-      update_client_record(client_name, encode(current_record))
+      _M.update_client_record(client_name, current_record)
       -- Return the previous invoice number.
       return current_invoice_number + 1
    else
@@ -131,10 +133,13 @@ end
 --   Side effects only.
 --
 function _M.update_client_record(client_name, values)
-   local record, not_empty = {}, false
+   local not_empty = false
+
+   -- See if we have an existing record or not.
+   record = _M.get_client_record(client_name) or {}
 
    -- Loop over the schema inserting the values.
-   for _, k in pairs(_M.client_schema) do
+   for _, k in ipairs(_M.client_schema) do
       if (values[k] ~= nil) then
          record[k] = values[k]
          -- Set the value so that we know if the table has at least
@@ -170,7 +175,7 @@ end
 --   The value of the given field for the given client.
 --
 function _M.get_client_field(client_name, field_name)
-   local current_client_record = get_client_record(client_name) or false
+   local current_client_record = _M.get_client_record(client_name) or false
 
    -- If the current record exists loop until we find the desired
    -- field.
@@ -182,7 +187,6 @@ function _M.get_client_field(client_name, field_name)
          end
       end
    end
-
    -- If we didn't found anything return nil.
    return nil
 end
@@ -196,7 +200,7 @@ end
 --   The invoice code.
 function _M.get_invoice_code(client_name)
    -- Concatenate the client name with the invoice number.
-   return format('%s-%d', client_name, get_set_invoice_number(client_name))
+   return format('%s-%03d', client_name, get_set_invoice_number(client_name))
 end
 
 return _M
