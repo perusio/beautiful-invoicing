@@ -1,15 +1,18 @@
 -- Tests for the invoicing facility using luaunit.
 
-require 'luaunit'
-
-TestInvoicing = {} -- test class
-
 local lower = string.lower
 local gsub = string.gsub
 local inv = require 'invoicing'
 
+require 'luaunit'
+
+lu = LuaUnit
+
+TestInvoicing = {} -- test class
+
+-- Setup function that builds the test data.
 function TestInvoicing:setup()
-   -- Get
+   -- Get the test client data.
    local sr = {}
    sr.client = 'New Client'
    local client_name = lower(gsub(sr.client, '[ -]+', '_'))
@@ -57,9 +60,6 @@ function TestInvoicing:get_client_fields()
    end
 end
 
---print(#argv)
-
-local lu = LuaUnit
 -- lu:setOutputType('TAP')
 lu:setVerbosity(5)
 lu:run('TestInvoicing:write_read')
