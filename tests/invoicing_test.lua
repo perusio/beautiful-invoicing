@@ -17,7 +17,7 @@ function TestInvoicing:setup()
    sr.client = 'New Client'
    local client_name = lower(gsub(sr.client, '[ -]+', '_'))
    sr.address = [[ New Client Inc \\
-Street X
+Street X\\
 Some Place 8967\\
 Silk Road 126789\\
 Atlantis ]]
